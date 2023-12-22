@@ -1,0 +1,31 @@
+{
+  "name": "thrift-to-zod",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "description": "thrift to zod schema generator",
+  "scripts": {
+    "dev": "vitest",
+    "test": "vitest run",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "tsc"
+  },
+  "keywords": [
+    "zod",
+    "fetch",
+    "typescript"
+  ],
+  "author": "Joey Colon",
+  "license": "MIT",
+  "devDependencies": {
+    "msw": "^1.0.0",
+    "tsup": "^6.5.0",
+    "typescript": "^4.9.5",
+    "vitest": "^0.28.4",
+    "zod": "^3.22.4"
+  },
+  "dependencies": {
+    "@creditkarma/thrift-parser": "^2.0.0"
+  }
+}
