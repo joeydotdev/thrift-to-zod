@@ -7,7 +7,7 @@
   "description": "thrift to zod schema generator",
   "scripts": {
     "dev": "vitest",
-    "test": "vitest run",
+    "test": "vitest run --silent=false",
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "lint": "tsc"
   },
@@ -26,6 +26,7 @@
     "zod": "^3.22.4"
   },
   "dependencies": {
-    "@creditkarma/thrift-parser": "^2.0.0"
+    "@creditkarma/thrift-parser": "^2.0.0",
+    "prettier": "^3.1.1"
   }
 }

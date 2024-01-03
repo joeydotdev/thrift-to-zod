@@ -15,9 +15,20 @@ type ThriftToZodGeneratorOpts = {
   disableOptionalFields?: boolean;
 };
 
-type ZodStatement<T extends z.ZodTypeAny = z.ZodTypeAny> = {
-  field: T;
+export type ZodStruct = {
+  name: string;
+  fields: Array<ZodStatement>;
   annotations: Map<any, any>;
+};
+
+export type ZodStatementMap = Map<string, ZodStatement>;
+
+export type ZodStatement<T extends z.ZodTypeAny = z.ZodTypeAny> = {
+  field: T;
+  // TODO: remove this
+  name?: string;
+  // TODO: remove this
+  annotations?: Map<any, any>;
 };
 
 let globalOpts: ThriftToZodGeneratorOpts;
@@ -127,13 +138,18 @@ function thriftFieldToZodField(thriftField: ThriftFieldDefinition) {
 
 function thriftStructToZodStruct(thriftStruct: ThriftStructDefinition) {
   const zodFields = new Map<string, ZodStatement>();
+  const zodStruct = {
+    name: thriftStruct.name.value,
+    fields: zodFields,
+    annotations: new Map<any, any>(),
+  };
 
   for (const thriftField of thriftStruct.fields) {
     const thriftAnnotations = Array.from(
       thriftField.annotations?.annotations ?? []
     );
     const zodField = thriftFieldToZodField(thriftField);
-    const zodAnnotations = new Map<any, any>();
+    const zodFieldAnnotations = new Map<any, any>();
 
     for (const thriftAnnotation of thriftAnnotations) {
       if (!thriftAnnotation.value) {
@@ -141,22 +157,25 @@ function thriftStructToZodStruct(thriftStruct: ThriftStructDefinition) {
         continue;
       }
 
-      zodAnnotations.set(
+      zodFieldAnnotations.set(
         thriftAnnotation.name.value,
         thriftAnnotation.value.value
       );
     }
 
     zodFields.set(thriftField.name.value, {
+      name: thriftField.name.value,
       field: zodField,
-      annotations: zodAnnotations,
+      annotations: zodFieldAnnotations,
     });
   }
 
-  return zodFields;
+  return zodStruct;
 }
 
-export function createThriftToZodGenerator(opts: ThriftToZodGeneratorOpts) {
+export function createThriftToZodGenerator(
+  opts: ThriftToZodGeneratorOpts
+): Array<ZodStruct> {
   globalOpts = opts;
 
   const thriftFile = fs.readFileSync(opts.rootThriftPath, 'utf-8');
@@ -169,7 +188,7 @@ export function createThriftToZodGenerator(opts: ThriftToZodGeneratorOpts) {
     throw new Error(`Thrift parse errors: ${thriftAst.errors}`);
   }
 
-  const zodBody: Array<Map<string, ZodStatement>> = [];
+  const zodStatements: Array<any> = [];
   for (const thriftStatement of thriftAst.body) {
     const zodStatement = thriftStatementToZodStatement(thriftStatement);
     if (zodStatement == null) {
@@ -177,8 +196,8 @@ export function createThriftToZodGenerator(opts: ThriftToZodGeneratorOpts) {
       continue;
     }
 
-    zodBody.push(zodStatement);
+    zodStatements.push(zodStatement);
   }
 
-  return zodBody;
+  return zodStatements;
 }
